@@ -18,6 +18,62 @@ class BaseConfig:
         self.parser = argparse.ArgumentParser()
         self.parser.add_argument("--model_name", type=str,
                                  default="Generative_AI_Authorship_Verification")
+        self.parser.add_argument("--load_in_8bit",
+                                 type=bool,
+                                 default=False)
+        self.parser.add_argument("--load_in_4bit",
+                                 type=bool,
+                                 default=True)
+        self.parser.add_argument("--bnb_4bit_use_double_quant",
+                                 type=bool,
+                                 default=True)
+        self.parser.add_argument("--lora_alpha",
+                                 type=int,
+                                 default=16)
+        self.parser.add_argument("--lora_dropout",
+                                 type=int,
+                                 default=0.1)
+        self.parser.add_argument("--lora_rank",
+                                 type=int,
+                                 default=64)
+        self.parser.add_argument("--device", default="auto",
+                                 help="device to inference models on it")
+        self.parser.add_argument("--per_device_train_batch_size",
+                                 type=int,
+                                 default=32)
+        self.parser.add_argument("--gradient_accumulation_steps",
+                                 type=int,
+                                 default=1)
+        self.parser.add_argument("--optim",
+                                 type=str,
+                                 help="activates the paging for better memory management",
+                                 default="paged_adamw_32bit")
+        self.parser.add_argument("--num_train_epochs",
+                                 type=int,
+                                 default=3)
+        self.parser.add_argument("--evaluation_strategy",
+                                 type=str,
+                                 default="steps")
+        self.parser.add_argument("--save_strategy",
+                                 type=str,
+                                 help="checkpoint save strategy to adopt during training [epoch]",
+                                 default="steps")
+        self.parser.add_argument("--learning_rate",
+                                 type=float,
+                                 help="learning rate for AdamW optimizer",
+                                 default=2e-5)
+        self.parser.add_argument("--max_grad_norm",
+                                 type=float,
+                                 help="maximum gradient norm (for gradient clipping)",
+                                 default=0.3)
+        self.parser.add_argument("--warmup_ratio",
+                                 type=float,
+                                 help="number of steps used for a linear warmup from 0 "
+                                      "to learning_rate",
+                                 default=0.03)
+        self.parser.add_argument("--lr_scheduler_type",
+                                 type=str,
+                                 default="constant") # constant, cosine
 
     def add_path(self) -> None:
         """
@@ -35,6 +91,13 @@ class BaseConfig:
                                  default="train_data.jsonl")
         self.parser.add_argument("--dev_file", type=str,
                                  default="dev_file.jsonl")
+        self.parser.add_argument("--saved_model_path",
+                                 type=str,
+                                 default=Path(__file__).parents[2].__str__() +
+                                         "/assets/saved_model")
+        self.parser.add_argument("--model_path",
+                                 type=str,
+                                 default="/mnt/disk2/LanguageModels/llama2-7b")
 
     def get_config(self):
         """
