@@ -35,3 +35,29 @@ def create_samples(type_2_data: dict):
                 sample = {"text1": data_text, "text2": human_text, "label": 0, "author": key}
             samples.append(sample)
     return samples
+
+
+def sequence_classification_data_creator(data: list) -> (list, dict, dict):
+    """
+    Create sequence classification data by concatenating two texts with a separator.
+
+    Args:
+        data (list): A list of objects containing 'text1', 'text2', and 'label' attributes.
+
+    Returns:
+        tuple: A tuple containing three elements:
+            - list: A list of dictionaries, each containing 'text' (concatenated text) and 'label'.
+            - dict: A dictionary mapping labels to their corresponding ids.
+            - dict: A dictionary mapping ids to their corresponding labels.
+    """
+    samples = []
+    labels = set()
+    for sample in data:
+        samples.append(
+            {"text": sample["text1"] + "[SEP]" + sample["text2"], "labels": sample["label"]})
+        labels.add(sample["label"])
+
+    # Creating label to id and id to label mappings
+    label2id = {label: idx for idx, label in enumerate(sorted(labels))}
+    id2label = {idx: label for label, idx in label2id.items()}
+    return samples, label2id, id2label
