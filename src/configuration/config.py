@@ -36,7 +36,7 @@ class BaseConfig:
         self.parser.add_argument("--lora_rank",
                                  type=int,
                                  default=64)
-        self.parser.add_argument("--device", default="auto",
+        self.parser.add_argument("--device", default="cuda:0",
                                  help="device to inference models on it")
         self.parser.add_argument("--per_device_train_batch_size",
                                  type=int,
@@ -73,7 +73,14 @@ class BaseConfig:
                                  default=0.03)
         self.parser.add_argument("--lr_scheduler_type",
                                  type=str,
-                                 default="constant") # constant, cosine
+                                 default="constant")  # constant, cosine
+
+        self.parser.add_argument("--stride",
+                                 type=int,
+                                 default=512)
+        self.parser.add_argument("--max_length",
+                                 type=int,
+                                 default=1024)
 
     def add_path(self) -> None:
         """
@@ -90,14 +97,14 @@ class BaseConfig:
         self.parser.add_argument("--train_file", type=str,
                                  default="train_data.jsonl")
         self.parser.add_argument("--dev_file", type=str,
-                                 default="dev_file.jsonl")
+                                 default="dev_data.jsonl")
         self.parser.add_argument("--saved_model_path",
                                  type=str,
                                  default=Path(__file__).parents[2].__str__() +
                                          "/assets/saved_model")
         self.parser.add_argument("--model_path",
                                  type=str,
-                                 default="/mnt/disk2/LanguageModels/llama2-7b")
+                                 default="/mnt/disk2/LanguageModels/llama-2-7b")
 
     def get_config(self):
         """
