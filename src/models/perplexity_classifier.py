@@ -92,7 +92,8 @@ class PerplexityClassifier:
             corresponding labels.
 
         Returns:
-            float: Accuracy of the classification model.
+            tuple: A tuple containing the accuracy of the classification model as a float,
+            and a list of predicted labels.
         """
         true_labels = [sample["label"] for sample in data]
         predicted_labels = []
@@ -102,4 +103,4 @@ class PerplexityClassifier:
             predicted_label = np.argmax([ppl1, ppl2])
             predicted_labels.append(predicted_label)
         accuracy = accuracy_score(true_labels, predicted_labels)
-        return accuracy
+        return accuracy, predicted_labels

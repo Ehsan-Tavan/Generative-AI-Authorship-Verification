@@ -17,5 +17,5 @@ if __name__ == "__main__":
     DEV_DATA = load_jsonl(os.path.join(ARGS.processed_data_dir, ARGS.dev_file))[:10]
     perplexity_classifier = PerplexityClassifier(ARGS)
 
-    ACC = perplexity_classifier.evaluate(DEV_DATA)
+    ACC, PREDICTED_LABELS = perplexity_classifier.evaluate(DEV_DATA)
     print("ACC", ACC)
