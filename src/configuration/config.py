@@ -88,6 +88,9 @@ class BaseConfig:
         self.parser.add_argument("--num_workers",
                                  type=int,
                                  default=4)
+        self.parser.add_argument("--save_top_k",
+                                 type=int,
+                                 default=2)
 
     def add_path(self) -> None:
         """
