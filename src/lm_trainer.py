@@ -40,4 +40,6 @@ if __name__ == "__main__":
                          dev_data=DEV_DATA, pooling_methods=["mean"],
                          optimizer_params={"lr": ARGS.learning_rate})
 
-    MODEL.fit()
+    MODEL.fit(check_point_monitor="dev_loss", check_point_mode="min",
+              early_stopping_monitor="dev_loss", early_stopping_patience=5)
+
