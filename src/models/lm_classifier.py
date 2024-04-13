@@ -69,6 +69,20 @@ class LmClassifier(pl.LightningModule):
 
         self.save_hyperparameters()
 
+    def encode(self,
+               sentences: List[str],
+               max_length: int = 50,
+               device: str = "cpu"):
+
+        self.args.device = device
+        batch = self.tokenizer(sentences, max_length=max_length, truncation=True,
+                               padding="max_length", return_tensors="pt").to(self.args.device)
+        with torch.no_grad():
+            out = self.forward(batch)
+            out = torch.argmax(out, dim=1)
+        out = out.detach().cpu().numpy()
+        return out
+
     def forward(self, batch: dict) -> torch.Tensor:
         output = self.model(**batch, return_dict=True)
         output = self.pooling_model(output.last_hidden_state, batch["attention_mask"],
