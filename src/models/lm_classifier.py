@@ -159,7 +159,7 @@ class LmClassifier(pl.LightningModule):
             check_point_filename = "QTag-{epoch:02d}-{" + check_point_monitor + ":.2f}"
             self.checkpoint_callback = ModelCheckpoint(monitor=check_point_monitor,
                                                        filename=check_point_filename,
-                                                       save_top_k=self.config.save_top_k,
+                                                       save_top_k=self.args.save_top_k,
                                                        mode=check_point_mode)
             callbacks.append(self.checkpoint_callback)
         # Add early stopping callback if specified
