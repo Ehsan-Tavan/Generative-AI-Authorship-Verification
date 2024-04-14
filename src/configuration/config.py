@@ -50,7 +50,11 @@ class BaseConfig:
                                  default="paged_adamw_32bit")
         self.parser.add_argument("--num_train_epochs",
                                  type=int,
-                                 default=3)
+                                 default=10)
+        self.parser.add_argument("--min_epochs",
+                                 type=int,
+                                 default=5)
+
         self.parser.add_argument("--evaluation_strategy",
                                  type=str,
                                  default="steps")
@@ -80,7 +84,16 @@ class BaseConfig:
                                  default=512)
         self.parser.add_argument("--max_length",
                                  type=int,
-                                 default=1024)
+                                 default=512)
+        self.parser.add_argument("--num_workers",
+                                 type=int,
+                                 default=4)
+        self.parser.add_argument("--save_top_k",
+                                 type=int,
+                                 default=2)
+        self.parser.add_argument("--training_data_type",
+                                 type=str,
+                                 default="single_text")
 
     def add_path(self) -> None:
         """
@@ -94,17 +107,24 @@ class BaseConfig:
                                  default=Path(__file__).parents[2].__str__() + "/data/Raw/")
         self.parser.add_argument("--processed_data_dir", type=str,
                                  default=Path(__file__).parents[2].__str__() + "/data/Processed/")
-        self.parser.add_argument("--train_file", type=str,
-                                 default="train_data.jsonl")
-        self.parser.add_argument("--dev_file", type=str,
-                                 default="dev_data.jsonl")
+
+        self.parser.add_argument("--pair_train_file", type=str,
+                                 default="pair_train_data.json")
+        self.parser.add_argument("--pair_dev_file", type=str,
+                                 default="pair_dev_data.json")
+
+        self.parser.add_argument("--single_train_file", type=str,
+                                 default="single_train_data.json")
+        self.parser.add_argument("--single_dev_file", type=str,
+                                 default="single_dev_data.json")
+
         self.parser.add_argument("--saved_model_path",
                                  type=str,
                                  default=Path(__file__).parents[2].__str__() +
                                          "/assets/saved_model")
         self.parser.add_argument("--model_path",
                                  type=str,
-                                 default="/mnt/disk2/LanguageModels/llama-2-7b")
+                                 default="/mnt/disk2/LanguageModels/xlm-roberta-base")
 
     def get_config(self):
         """

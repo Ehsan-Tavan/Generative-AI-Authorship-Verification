@@ -5,6 +5,7 @@
 """
 # ============================ Third Party libs ============================
 import json
+import pandas as pd
 
 
 def load_jsonl(file_path: str) -> list:
@@ -22,3 +23,20 @@ def load_jsonl(file_path: str) -> list:
         for line in file:
             data.append(json.loads(line))
     return data
+
+
+def read_csv(path: str, columns: list = None, names: list = None) -> pd.DataFrame:
+    """
+    read_csv function for reading csv files
+
+    Args:
+        path:
+        columns:
+        names:
+
+    Returns:
+
+    """
+    dataframe = pd.read_csv(path, usecols=columns) if columns else pd.read_csv(path)
+    return dataframe.rename(columns=dict(zip(columns, names))) if names else dataframe
+
