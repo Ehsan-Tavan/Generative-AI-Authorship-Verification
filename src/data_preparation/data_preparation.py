@@ -55,11 +55,11 @@ def create_single_samples(pair_samples):
     samples = []
     for item in pair_samples:
         if item["label"] == 0:
-            samples.append({"text": item["text1"], "label": "machine"})
-            samples.append({"text": item["text2"], "label": "human"})
+            samples.append({"text": item["text1"], "label": "machine", "author": item["author"]})
+            samples.append({"text": item["text2"], "label": "human", "author": "human"})
         elif item["label"] == 1:
-            samples.append({"text": item["text1"], "label": "human"})
-            samples.append({"text": item["text2"], "label": "machine"})
+            samples.append({"text": item["text1"], "label": "human", "author": "human"})
+            samples.append({"text": item["text2"], "label": "machine", "author": item["author"]})
     return samples
 
 
