@@ -30,7 +30,7 @@ class AbstractDataset(ABC, torch.utils.data.Dataset):
         self.tokenizer = tokenizer
         self.max_len = max_len
 
-    def _encode_sample(self, text):
+    def _encode_sample(self, text, text_pair=None):
         """
         Encode a text sample using the provided tokenizer.
 
@@ -42,10 +42,11 @@ class AbstractDataset(ABC, torch.utils.data.Dataset):
         """
         encoded_sample = self.tokenizer.encode_plus(
             text=text,
+            text_pair=text_pair,
             max_length=self.max_len,
             return_tensors="pt",
             padding="max_length",
-            truncation=True
+            truncation="longest_first"
         )
 
         # Flatten the tensors for easy access
@@ -89,13 +90,12 @@ class TextPairDataset(AbstractDataset):
             dict: Sample data.
         """
         sample = self.data[item_index]
-        self.text = sample["text1"] + "[SEP]" + sample["text2"]
         self.target = sample["label"]
 
         # Encode the text using the tokenizer
-        encoded_text = self._encode_sample(self.text)
+        encoded_text = self._encode_sample(text=sample["text1"], text_pair=sample["text2"])
 
-        encoded_text["label"] = self.target
+        encoded_text["targets"] = self.target
 
         return encoded_text
 
