@@ -108,7 +108,7 @@ class SingleTextDataset(AbstractDataset):
         Returns:
             int: Number of samples in the dataset.
         """
-        return len(self.data[0])
+        return len(self.data)
 
     def __getitem__(self,
                     item_index: int) -> dict:
