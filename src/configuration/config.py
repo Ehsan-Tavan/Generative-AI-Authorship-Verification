@@ -118,8 +118,6 @@ class BaseConfig:
         self.parser.add_argument("--single_dev_file", type=str,
                                  default="single_dev_data.json")
 
-        self.parser.add_argument("--evaluate_file", type=str,
-                                 default="evaluate_single.csv")
         self.parser.add_argument("--saved_model_path",
                                  type=str,
                                  default=Path(__file__).parents[2].__str__() +
