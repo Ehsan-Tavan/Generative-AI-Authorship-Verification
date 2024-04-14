@@ -19,8 +19,10 @@ if __name__ == "__main__":
     ARGS = CONFIG_CLASS.get_config()
 
     TRAIN_DATA, DEV_DATA = prepare_data(
-        train_data_path=os.path.join(ARGS.processed_data_dir, ARGS.train_file),
-        dev_data_path=os.path.join(ARGS.processed_data_dir, ARGS.dev_file),
+        pair_train_data_path=os.path.join(ARGS.processed_data_dir, ARGS.pair_train_file),
+        pair_dev_data_path=os.path.join(ARGS.processed_data_dir, ARGS.pair_dev_file),
+        single_train_data_path=os.path.join(ARGS.processed_data_dir, ARGS.single_train_file),
+        single_dev_data_path=os.path.join(ARGS.processed_data_dir, ARGS.single_dev_file),
         training_data_type=ARGS.training_data_type)
 
     MODEL = LmClassifier(model_path=ARGS.model_path, args=ARGS,
