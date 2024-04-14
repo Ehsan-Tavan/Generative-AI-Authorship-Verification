@@ -29,10 +29,12 @@ def create_samples(type_2_data: dict):
     for index, item in enumerate(human_data):
         selected_key = random.choice(machine_names)
         if index % 2 == 0:
-            pair_sample = {"text1": item, "text2": type_2_data[selected_key][index], "label": 1,
+            pair_sample = {"text1": item, "text2": type_2_data[selected_key][index]["text"],
+                           "label": 1,
                            "author": selected_key}
         else:
-            pair_sample = {"text1": type_2_data[selected_key][index], "text2": item, "label": 0,
+            pair_sample = {"text1": type_2_data[selected_key][index]["text"], "text2": item,
+                           "label": 0,
                            "author": selected_key}
         pair_samples.append(pair_sample)
     return pair_samples
