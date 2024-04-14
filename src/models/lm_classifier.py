@@ -14,6 +14,7 @@ import torchmetrics
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.loggers import CSVLogger
+from torch.utils.data import DataLoader
 from transformers import AutoModel, AutoTokenizer
 
 from src.dataset import DataModule
@@ -72,19 +73,24 @@ class LmClassifier(pl.LightningModule):
 
         self.save_hyperparameters()
 
-    def encode(self,
-               sentences: List[str],
-               max_length: int = 50,
-               device: str = "cpu"):
-
+    def predict(self,
+                data: List,
+                device: str = "cpu"):
         self.args.device = device
-        batch = self.tokenizer(sentences, max_length=max_length, truncation=True,
-                               padding="max_length", return_tensors="pt").to(self.args.device)
+        dataset = self.dataset_obj(
+            data=data,
+            tokenizer=self.tokenizer,
+            max_len=self.args.max_length)
+        dataloader = DataLoader(dataset=dataset, batch_size=64, shuffle=False)
+        predictions = []
         with torch.no_grad():
-            out = self.forward(batch)
-            out = torch.argmax(out, dim=1)
-        out = out.detach().cpu().numpy()
-        return out
+            for batch_ndx, batch in enumerate(dataloader):
+                batch.pop("targets")
+                batch["input_ids"] = batch["input_ids"].to(self.args.device)
+                batch["attention_mask"] = batch["attention_mask"].to(self.args.device)
+                out = torch.argmax(self.forward(batch), dim=1).detach().cpu().numpy()
+                predictions.extend(out)
+        return predictions
 
     def forward(self, batch: dict) -> torch.Tensor:
         output = self.model(**batch, return_dict=True)
