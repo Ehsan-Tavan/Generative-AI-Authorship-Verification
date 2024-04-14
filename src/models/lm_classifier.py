@@ -16,7 +16,7 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.loggers import CSVLogger
 from transformers import AutoModel, AutoTokenizer
 
-from src.dataset import DataModule, SingleTextDataset
+from src.dataset import DataModule
 # ============================ My packages ============================
 from .pooling_model import Pooling
 
@@ -28,6 +28,7 @@ class LmClassifier(pl.LightningModule):
                  loss_fct,
                  train_data: list,
                  dev_data: list,
+                 dataset_obj,
                  num_classes: int = 2,
                  pooling_methods: List[str] = None,
                  optimizer_class: Type[torch.optim.Optimizer] = torch.optim.AdamW,
@@ -55,6 +56,8 @@ class LmClassifier(pl.LightningModule):
         self.pooling_model = Pooling()
         self.optimizer_class = optimizer_class
         self.optimizer_params = optimizer_params
+
+        self.dataset_obj = dataset_obj
 
         self.trainer = None
         self.data_module = None
@@ -221,7 +224,7 @@ class LmClassifier(pl.LightningModule):
                                       train_data=self.train_data,
                                       dev_data=self.dev_data,
                                       test_data=self.dev_data,
-                                      dataset_obj=SingleTextDataset,
+                                      dataset_obj=self.dataset_obj,
                                       tokenizer=self.tokenizer)
 
         # Start the model training using the configured trainer and data module
