@@ -121,8 +121,8 @@ class SingleTextDataset(AbstractDataset):
         Returns:
             dict: Sample data.
         """
-        self.text = self.data[0][item_index]
-        self.target = self.data[1][item_index]
+        self.text = self.data[item_index]["text"]
+        self.target = self.data[item_index]["label"]
 
         # Encode the text using the tokenizer
         encoded_text = self._encode_sample(self.text)
