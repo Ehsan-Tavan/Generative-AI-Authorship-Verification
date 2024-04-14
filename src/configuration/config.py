@@ -91,6 +91,9 @@ class BaseConfig:
         self.parser.add_argument("--save_top_k",
                                  type=int,
                                  default=2)
+        self.parser.add_argument("--training_data_type",
+                                 type=str,
+                                 default="single_text")
 
     def add_path(self) -> None:
         """
