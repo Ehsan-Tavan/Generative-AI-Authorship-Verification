@@ -7,7 +7,7 @@
 from abc import ABC, abstractmethod
 
 # ============================ My packages ============================
-from src.data_loader import read_csv, load_jsonl
+from src.data_loader import load_jsonl
 
 
 class DataProcessor(ABC):
@@ -47,8 +47,8 @@ class SingleTextDataProcessor(DataProcessor):
             tuple: A tuple containing the prepared training data and validation data.
         """
 
-        train_data = self._read_data(train_data_path)
-        dev_data = self._read_data(dev_data_path)
+        train_data = self._load_data(train_data_path)
+        dev_data = self._load_data(dev_data_path)
 
         train_data = self._process_data(train_data)
         dev_data = self._process_data(dev_data)
@@ -58,19 +58,17 @@ class SingleTextDataProcessor(DataProcessor):
         return train_data, dev_data
 
     @staticmethod
-    def _read_data(data_path):
+    def _load_data(data_path: str):
         """
-        Read data from a CSV file.
+         Load data from a JSONL file.
 
-        Args:
-            data_path (str): Path to the CSV file.
+         Args:
+             data_path (str): Path to the JSONL file.
 
-        Returns:
-            pandas.DataFrame: The data read from the CSV file.
-        """
-
-        data = read_csv(data_path)
-        return data.dropna()
+         Returns:
+             list: The data loaded from the JSONL file.
+         """
+        return load_jsonl(data_path)
 
     @staticmethod
     def _process_data(data):
@@ -78,14 +76,15 @@ class SingleTextDataProcessor(DataProcessor):
         Process the data by mapping labels and converting to lists.
 
         Args:
-            data (pandas.DataFrame): Input data.
+            data (list of dict): Input data.
 
         Returns:
             list: Processed data as a list containing text and labels.
         """
         label_dict = {"human": 1, "machine": 0}
-        data["label"] = data["label"].map(lambda x: label_dict[x])
-        return [list(data["text"]), list(data["label"])]
+        for sample in data:
+            sample["label"] = label_dict[sample["label"]]
+        return data
 
 
 class TextPairDataProcessor(DataProcessor):
@@ -149,17 +148,17 @@ class DataProcessorFactory:
             raise ValueError("Invalid training_data_type")
 
 
-def prepare_data(train_data_path: str, dev_data_path: str, training_data_type: str):
-    """
-    Prepare training and validation data based on the type of training data.
+def prepare_data(pair_train_data_path: str, pair_dev_data_path: str,
+                 single_train_data_path: str, single_dev_data_path: str,
+                 training_data_type: str):
+    if training_data_type == "single_text":
+        train_data_path = single_train_data_path
+        dev_data_path = single_dev_data_path
+    elif training_data_type == "text_pair":
+        train_data_path = pair_train_data_path
+        dev_data_path = pair_dev_data_path
+    else:
+        raise ValueError("Invalid training_data_type")
 
-    Args:
-        train_data_path (str): Path to the training data.
-        dev_data_path (str): Path to the validation data.
-        training_data_type (str): Type of training data ("single_text" or "text_pair").
-
-    Returns:
-        tuple: A tuple containing the prepared training data and validation data.
-    """
     data_processor = DataProcessorFactory.create_data_processor(training_data_type)
     return data_processor.prepare_data(train_data_path, dev_data_path)
