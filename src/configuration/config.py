@@ -108,6 +108,8 @@ class BaseConfig:
                                  default="train_single.csv")
         self.parser.add_argument("--dev_file", type=str,
                                  default="dev_single.csv")
+        self.parser.add_argument("--evaluate_file", type=str,
+                                 default="evaluate_single.csv")
         self.parser.add_argument("--saved_model_path",
                                  type=str,
                                  default=Path(__file__).parents[2].__str__() +
