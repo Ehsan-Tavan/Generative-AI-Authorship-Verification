@@ -107,10 +107,17 @@ class BaseConfig:
                                  default=Path(__file__).parents[2].__str__() + "/data/Raw/")
         self.parser.add_argument("--processed_data_dir", type=str,
                                  default=Path(__file__).parents[2].__str__() + "/data/Processed/")
-        self.parser.add_argument("--train_file", type=str,
-                                 default="train_single.csv")
-        self.parser.add_argument("--dev_file", type=str,
-                                 default="dev_single.csv")
+
+        self.parser.add_argument("--pair_train_file", type=str,
+                                 default="pair_train_data.json")
+        self.parser.add_argument("--pair_dev_file", type=str,
+                                 default="pair_dev_data.json")
+
+        self.parser.add_argument("--single_train_file", type=str,
+                                 default="single_train_data.json")
+        self.parser.add_argument("--single_dev_file", type=str,
+                                 default="single_dev_data.json")
+
         self.parser.add_argument("--evaluate_file", type=str,
                                  default="evaluate_single.csv")
         self.parser.add_argument("--saved_model_path",
