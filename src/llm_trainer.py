@@ -17,8 +17,8 @@ from src.data_preparation import sequence_classification_data_creator
 if __name__ == "__main__":
     CONFIG_CLASS = BaseConfig()
     ARGS = CONFIG_CLASS.get_config()
-    TRAIN_DATA = load_jsonl(os.path.join(ARGS.processed_data_dir, ARGS.train_file))
-    DEV_DATA = load_jsonl(os.path.join(ARGS.processed_data_dir, ARGS.dev_file))
+    TRAIN_DATA = load_jsonl(os.path.join(ARGS.processed_data_dir, ARGS.single_train_file))
+    DEV_DATA = load_jsonl(os.path.join(ARGS.processed_data_dir, ARGS.single_dev_file))
 
     print(f"We have {len(TRAIN_DATA)} training samples.")
     print(f"We have {len(DEV_DATA)} validation samples.")
