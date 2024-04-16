@@ -5,23 +5,20 @@
 
 """
 
+import json
 # ============================ Third Party libs =======================
 import os
-import numpy as np
 from typing import List
-from scipy.special import softmax
-import torch.nn.functional as F
+
 import bitsandbytes as bnb
-import torch
 import evaluate
+import numpy as np
+import torch
+import torch.nn.functional as F
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, TaskType
+from scipy.special import softmax
 from transformers import AutoTokenizer, BitsAndBytesConfig, \
-    TrainingArguments, DataCollatorWithPadding, AutoModelForSequenceClassification, Trainer
-from trl import SFTTrainer
-
-import json
-
-
+    TrainingArguments, DataCollatorWithPadding, Trainer, LlamaForSequenceClassification
 
 from src.utils import CreateLogFile
 
@@ -53,13 +50,23 @@ class LLMModel:
         )
         return bnb_config
 
+    def create_lora_config(self, modules):
+        self.peft_config = LoraConfig(
+            lora_alpha=self.args.lora_alpha,
+            lora_dropout=self.args.lora_dropout,
+            r=self.args.lora_rank,
+            bias="none",  # setting to 'none' for only training weight params instead of biases
+            task_type=TaskType.SEQ_CLS,
+            target_modules=modules
+        )
+
     def load_model(self, model_path):
         tokenizer = AutoTokenizer.from_pretrained(model_path, trust_remote_code=True)
         # Needed for LLaMA tokenizer
-        tokenizer.pad_token = tokenizer.eos_token
+        # tokenizer.pad_token = tokenizer.eos_token
 
         bnb_config = self.create_quantization_config()
-        model = AutoModelForSequenceClassification.from_pretrained(
+        model = LlamaForSequenceClassification.from_pretrained(
             model_path,
             quantization_config=bnb_config,
             trust_remote_code=True,
@@ -76,7 +83,7 @@ class LLMModel:
                 tokenizer.pad_token = tokenizer.eos_token
             else:
                 tokenizer.add_special_tokens({"pad_token": "[PAD]"})
-        model.resize_token_embeddings(len(tokenizer), pad_to_multiple_of=32)
+        model.resize_token_embeddings(len(tokenizer))
         try:
             model.config.pad_token_id = tokenizer.get_vocab()[tokenizer.pad_token]
         except Exception as error:
@@ -95,16 +102,6 @@ class LLMModel:
             lora_module_names.remove("lm_head")
         return list(lora_module_names)
 
-    def create_lora_config(self, modules):
-        self.peft_config = LoraConfig(
-            lora_alpha=self.args.lora_alpha,
-            lora_dropout=self.args.lora_dropout,
-            r=self.args.lora_rank,
-            bias="none",  # setting to 'none' for only training weight params instead of biases
-            task_type=TaskType.SEQ_CLS,
-            target_modules=modules
-        )
-
     def create_peft_model(self):
         lora_module_names = self.find_all_linear_names()
         self.create_lora_config(modules=lora_module_names)
@@ -115,8 +112,9 @@ class LLMModel:
     def fine_tune(self, train_dataset, eval_dataset):
         tokenized_train_dataset = train_dataset.map(preprocess_function, batched=True,
                                                     fn_kwargs={'tokenizer': self.tokenizer})
+
         tokenized_valid_dataset = eval_dataset.map(preprocess_function, batched=True,
-                                                    fn_kwargs={'tokenizer': self.tokenizer})
+                                                   fn_kwargs={'tokenizer': self.tokenizer})
         data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
         saved_model_path = self.create_log_file.create_versioned_file()
         num_evaluate_steps = int(len(train_dataset) / (
@@ -210,10 +208,14 @@ class CustomTrainer(Trainer):
 
 
 def preprocess_function(examples, **fn_kwargs):
-    return fn_kwargs['tokenizer'](examples["text"], truncation=True, max_length=512)
+    return fn_kwargs['tokenizer'](examples["text"], truncation=True,
+                                  padding=True,
+                                  max_length=512)
 
 
 f1_metric = evaluate.load("f1")
+
+
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
     predictions = np.argmax(predictions, axis=1)

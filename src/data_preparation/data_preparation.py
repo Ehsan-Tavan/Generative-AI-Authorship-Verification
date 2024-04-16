@@ -107,13 +107,11 @@ def sequence_classification_data_creator(data: list) -> (list, dict, dict):
             - dict: A dictionary mapping ids to their corresponding labels.
     """
     samples = []
-    labels = set()
+    label2id = {"human": 1, "machine": 0}
     for sample in data:
         samples.append(
-            {"text": sample["text1"] + "[SEP]" + sample["text2"], "labels": sample["label"]})
-        labels.add(sample["label"])
+            {"text": sample["text"], "labels": label2id[sample["label"]]})
 
     # Creating label to id and id to label mappings
-    label2id = {label: idx for idx, label in enumerate(sorted(labels))}
     id2label = {idx: label for label, idx in label2id.items()}
     return samples, label2id, id2label
