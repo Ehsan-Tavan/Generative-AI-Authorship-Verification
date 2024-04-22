@@ -53,8 +53,8 @@ class SingleTextDataProcessor(DataProcessor):
         train_data = self._process_data(train_data)
         dev_data = self._process_data(dev_data)
 
-        print(f"We have {len(train_data[0])} training samples.")
-        print(f"We have {len(dev_data[0])} validation samples.")
+        print(f"We have {len(train_data)} training samples.")
+        print(f"We have {len(dev_data)} validation samples.")
         return train_data, dev_data
 
     @staticmethod
