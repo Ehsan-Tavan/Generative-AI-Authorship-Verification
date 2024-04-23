@@ -115,3 +115,36 @@ def sequence_classification_data_creator(data: list) -> (list, dict, dict):
     # Creating label to id and id to label mappings
     id2label = {idx: label for label, idx in label2id.items()}
     return samples, label2id, id2label
+
+
+def paraphraser_data_creator(data: list, mode="train") -> (list, dict, dict):
+    instructions = []
+    instruction_key = "### Instruction: "
+    task_instruction = "You are a model designed for paraphrasing. Please rephrase the given " \
+                       "text in a natural, human-like style."
+    input_key = "### Text: "
+    end_key = "### End"
+    response_key = "### Response: "
+
+    for sample in data:
+        instruction = f"{instruction_key}\n{task_instruction}"
+        if sample["label"] == 0:
+            input_text = f"{input_key}\n{sample['text2']}"
+            response = f"{response_key}\n{sample['text1']}"
+
+        else:
+            input_text = f"{input_key}\n{sample['text1']}"
+            response = f"{response_key}\n{sample['text2']}"
+
+        end = f"{end_key}"
+        if mode == "train":
+            parts = [part for part in
+                     [instruction, input_text, response, end]]
+        else:
+            parts = [part for part in
+                     [instruction, input_text, response_key]]
+
+        formatted_prompt = "\n".join(parts)
+        instructions.append({"instruction": formatted_prompt})
+
+    return instructions
