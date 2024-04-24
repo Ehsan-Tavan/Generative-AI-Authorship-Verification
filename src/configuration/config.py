@@ -124,6 +124,9 @@ class BaseConfig:
                                          "/assets/saved_model")
         self.parser.add_argument("--model_path",
                                  type=str,
+                                 default="/mnt/disk2/LanguageModels/llama-2-7b")
+        self.parser.add_argument("--lm_model_path",
+                                 type=str,
                                  default="/mnt/disk2/LanguageModels/xlm-roberta-base")
 
     def get_config(self):
