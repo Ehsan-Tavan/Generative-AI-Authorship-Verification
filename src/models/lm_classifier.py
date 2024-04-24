@@ -15,7 +15,7 @@ from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.loggers import CSVLogger
 from torch.utils.data import DataLoader
-from transformers import AutoModel, AutoTokenizer
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from src.dataset import DataModule
 # ============================ My packages ============================
@@ -31,7 +31,6 @@ class LmClassifier(pl.LightningModule):
                  dev_data: list,
                  dataset_obj,
                  num_classes: int = 2,
-                 pooling_methods: List[str] = None,
                  optimizer_class: Type[torch.optim.Optimizer] = torch.optim.AdamW,
                  optimizer_params: Dict[str, object] = None,
                  ):
@@ -40,21 +39,17 @@ class LmClassifier(pl.LightningModule):
 
         self.loss_fct = loss_fct
 
-        pooling_methods = pooling_methods or ["cls"]
         optimizer_params = optimizer_params or {"lr": self.args.lr}
 
         # Initialization of model components
-        self.model = AutoModel.from_pretrained(model_path, output_hidden_states=True)
+        self.model = AutoModelForSequenceClassification.from_pretrained(
+            model_path, num_labels=num_classes)  # , output_hidden_states=True)
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
 
-        self.linear = torch.nn.Linear(self.model.config.hidden_size, num_classes)
+        # self.linear = torch.nn.Linear(self.model.config.hidden_size, num_classes)
 
         self.train_data = train_data
         self.dev_data = dev_data
-        if len(pooling_methods) != 1:
-            raise ValueError("Using only one type of pooling methods. ['mean', 'max', 'cls']")
-        self.pooling_methods = pooling_methods
-        self.pooling_model = Pooling()
         self.optimizer_class = optimizer_class
         self.optimizer_params = optimizer_params
 
@@ -64,12 +59,12 @@ class LmClassifier(pl.LightningModule):
         self.data_module = None
         self.checkpoint_callback = None
 
-        self.accuracy = torchmetrics.Accuracy(task="binary")
-        self.f_score = torchmetrics.F1Score(task="binary", average="none", num_classes=num_classes)
-        self.f_score_weighted = torchmetrics.F1Score(task="binary", average="weighted",
-                                                     num_classes=num_classes)
-        self.f_score_macro = torchmetrics.F1Score(task="binary", average="macro",
-                                                  num_classes=num_classes)
+        self.accuracy = torchmetrics.Accuracy()
+        self.f_score = torchmetrics.F1(average="none", num_classes=num_classes)
+        self.f_score_weighted = torchmetrics.F1(average="weighted",
+                                                num_classes=num_classes)
+        self.f_score_macro = torchmetrics.F1(average="macro",
+                                             num_classes=num_classes)
 
         self.save_hyperparameters()
 
@@ -88,29 +83,25 @@ class LmClassifier(pl.LightningModule):
                 batch.pop("targets")
                 batch["input_ids"] = batch["input_ids"].to(self.args.device)
                 batch["attention_mask"] = batch["attention_mask"].to(self.args.device)
-                out = torch.argmax(self.forward(batch), dim=1).detach().cpu().numpy()
+                out = torch.argmax(self.forward(batch).logits, dim=1).detach().cpu().numpy()
                 predictions.extend(out)
         return predictions
 
     def forward(self, batch: dict) -> torch.Tensor:
         output = self.model(**batch, return_dict=True)
-        output = self.pooling_model(output.last_hidden_state, batch["attention_mask"],
-                                    pooling_methods=self.pooling_methods)
-
-        logits = self.linear(output[0])
-        return logits
+        return output
 
     def training_step(self, batch: dict, _):
         targets = batch["targets"].flatten()
         batch.pop("targets")
         outputs = self.forward(batch)
-        loss = self.loss_fct(outputs, targets)
+        loss = self.loss_fct(outputs.logits, targets)
 
         metric2value = {
             "train_loss": loss,
-            "train_acc": self.accuracy(torch.argmax(outputs, dim=1), targets),
-            "train_f_score_macro": self.f_score_macro(torch.argmax(outputs, dim=1), targets),
-            "train_f_score_weighted": self.f_score_weighted(torch.argmax(outputs, dim=1), targets)
+            "train_acc": self.accuracy(torch.argmax(outputs.logits, dim=1), targets),
+            "train_f_score_macro": self.f_score_macro(torch.argmax(outputs.logits, dim=1), targets),
+            "train_f_score_weighted": self.f_score_weighted(torch.argmax(outputs.logits, dim=1), targets)
         }
 
         self.log_dict(metric2value, on_step=False, on_epoch=True, prog_bar=True, logger=True)
@@ -120,13 +111,13 @@ class LmClassifier(pl.LightningModule):
         targets = batch["targets"].flatten()
         batch.pop("targets")
         outputs = self.forward(batch)
-        loss = self.loss_fct(outputs, targets)
+        loss = self.loss_fct(outputs.logits, targets)
 
         metric2value = {
             "dev_loss": loss,
-            "dev_acc": self.accuracy(torch.argmax(outputs, dim=1), targets),
-            "dev_f_score_macro": self.f_score_macro(torch.argmax(outputs, dim=1), targets),
-            "dev_f_score_weighted": self.f_score_weighted(torch.argmax(outputs, dim=1), targets)
+            "dev_acc": self.accuracy(torch.argmax(outputs.logits, dim=1), targets),
+            "dev_f_score_macro": self.f_score_macro(torch.argmax(outputs.logits, dim=1), targets),
+            "dev_f_score_weighted": self.f_score_weighted(torch.argmax(outputs.logits, dim=1), targets)
         }
 
         self.log_dict(metric2value, on_step=False, on_epoch=True, prog_bar=True, logger=True)
@@ -146,13 +137,13 @@ class LmClassifier(pl.LightningModule):
         targets = batch["targets"].flatten()
         batch.pop("targets")
         outputs = self.forward(batch)
-        loss = self.loss_fct(outputs, targets)
+        loss = self.loss_fct(outputs.logits, targets)
 
         metric2value = {
             "test_loss": loss,
-            "test_acc": self.accuracy(torch.argmax(outputs, dim=1), targets),
-            "test_f_score_macro": self.f_score_macro(torch.argmax(outputs, dim=1), targets),
-            "test_f_score_weighted": self.f_score_weighted(torch.argmax(outputs, dim=1), targets)
+            "test_acc": self.accuracy(torch.argmax(outputs.logits, dim=1), targets),
+            "test_f_score_macro": self.f_score_macro(torch.argmax(outputs.logits, dim=1), targets),
+            "test_f_score_weighted": self.f_score_weighted(torch.argmax(outputs.logits, dim=1), targets)
         }
 
         self.log_dict(metric2value, on_step=False, on_epoch=True, prog_bar=True, logger=True)
@@ -194,7 +185,7 @@ class LmClassifier(pl.LightningModule):
         logger = CSVLogger(self.args.saved_model_path, name=self.args.model_name)
 
         trainer = pl.Trainer(max_epochs=self.args.num_train_epochs,
-                             devices=[int(self.args.device[-1])],
+                             gpus=[int(self.args.device[-1])],
                              callbacks=callbacks, min_epochs=self.args.min_epochs,
                              logger=logger)
 
