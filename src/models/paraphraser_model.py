@@ -51,7 +51,7 @@ class LLMModel:
             lora_dropout=self.args.lora_dropout,
             r=self.args.lora_rank,
             bias="none",  # setting to 'none' for only training weight params instead of biases
-            task_type=TaskType.SEQ_CLS,
+            task_type=TaskType.CAUSAL_LM,
             target_modules=modules
         )
 
