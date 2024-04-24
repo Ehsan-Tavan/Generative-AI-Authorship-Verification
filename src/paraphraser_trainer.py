@@ -14,6 +14,7 @@ from src.data_loader import load_jsonl
 from src.models.paraphraser_model import LLMModel
 from src.data_preparation import paraphraser_data_creator
 
+os.environ["WANDB_MODE"] = "offline"
 
 if __name__ == "__main__":
     CONFIG_CLASS = BaseConfig()

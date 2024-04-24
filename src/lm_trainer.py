@@ -25,7 +25,7 @@ if __name__ == "__main__":
         single_dev_data_path=os.path.join(ARGS.processed_data_dir, ARGS.single_dev_file),
         training_data_type=ARGS.training_data_type)
 
-    MODEL = LmClassifier(model_path=ARGS.model_path, args=ARGS,
+    MODEL = LmClassifier(model_path=ARGS.lm_model_path, args=ARGS,
                          loss_fct=torch.nn.CrossEntropyLoss(),
                          optimizer_class=torch.optim.AdamW,
                          train_data=TRAIN_DATA,
