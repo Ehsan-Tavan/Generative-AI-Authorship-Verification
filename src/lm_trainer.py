@@ -30,7 +30,7 @@ if __name__ == "__main__":
                          optimizer_class=torch.optim.AdamW,
                          train_data=TRAIN_DATA,
                          dataset_obj=SingleTextDataset,
-                         dev_data=DEV_DATA, pooling_methods=["mean"],
+                         dev_data=DEV_DATA,
                          optimizer_params={"lr": ARGS.learning_rate})
 
     MODEL.fit(check_point_monitor="dev_loss", check_point_mode="min",

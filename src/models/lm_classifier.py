@@ -19,7 +19,6 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 from src.dataset import DataModule
 # ============================ My packages ============================
-from .pooling_model import Pooling
 
 
 class LmClassifier(pl.LightningModule):
