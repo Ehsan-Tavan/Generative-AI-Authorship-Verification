@@ -5,21 +5,19 @@
 
 """
 
-import json
 # ============================ Third Party libs =======================
 import os
 from typing import List
 
 import bitsandbytes as bnb
-import evaluate
-import numpy as np
 import torch
 import torch.nn.functional as F
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, TaskType
-from scipy.special import softmax
 from transformers import AutoTokenizer, BitsAndBytesConfig, \
-    TrainingArguments, DataCollatorWithPadding, Trainer, LlamaForSequenceClassification
+    TrainingArguments, DataCollatorWithPadding, Trainer, LlamaForSequenceClassification, \
+    AutoModelForSequenceClassification
 
+# ============================ My packages ============================
 from src.utils import CreateLogFile
 
 
@@ -66,7 +64,7 @@ class LLMModel:
         # tokenizer.pad_token = tokenizer.eos_token
 
         bnb_config = self.create_quantization_config()
-        model = LlamaForSequenceClassification.from_pretrained(
+        model = AutoModelForSequenceClassification.from_pretrained(
             model_path,
             quantization_config=bnb_config,
             trust_remote_code=True,
@@ -111,10 +109,12 @@ class LLMModel:
 
     def fine_tune(self, train_dataset, eval_dataset):
         tokenized_train_dataset = train_dataset.map(preprocess_function, batched=True,
-                                                    fn_kwargs={'tokenizer': self.tokenizer})
+                                                    fn_kwargs={"tokenizer": self.tokenizer,
+                                                               "max_length": self.args.max_length})
 
         tokenized_valid_dataset = eval_dataset.map(preprocess_function, batched=True,
-                                                   fn_kwargs={'tokenizer': self.tokenizer})
+                                                   fn_kwargs={"tokenizer": self.tokenizer,
+                                                              "max_length": self.args.max_length})
         data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
         saved_model_path = self.create_log_file.create_versioned_file()
         num_evaluate_steps = int(len(train_dataset) / (
@@ -141,53 +141,23 @@ class LLMModel:
             load_best_model_at_end=True,
             metric_for_best_model="loss",
             save_total_limit=2,  # will save 2 checkpoints (best one and last one)
-            # report_to="wandb"
         )
         if self.peft_model:
             trainer = CustomTrainer(
                 model=self.peft_model,
                 train_dataset=tokenized_train_dataset,
                 eval_dataset=tokenized_valid_dataset,
-                # peft_config=peft_config,
-                # dataset_text_field="text",
-                # max_seq_length=max_seq_length,
                 tokenizer=self.tokenizer,
                 args=training_arguments,
                 data_collator=data_collator,
-                compute_metrics=compute_metrics
             )
 
-            # trainer = SFTTrainer(
-            #     model=self.peft_model,
-            #     train_dataset=train_dataset,
-            #     eval_dataset=eval_dataset,
-            #     peft_config=self.peft_config,
-            #     dataset_text_field="text",
-            #     max_seq_length=512,
-            #     tokenizer=self.tokenizer,
-            #     data_collator=data_collator,
-            #     args=training_arguments,
-            # )
-            # trainer.add_callback(MyCallback(eval_dataset))
             for name, module in trainer.model.named_modules():
                 if "norm" in name:
                     module = module.to(torch.float32)
             self.peft_model.config.use_cache = False
             trainer.train()
             trainer.save_model(os.path.join(saved_model_path, "best_model"))
-
-            predictions = trainer.predict(tokenized_valid_dataset)
-            prob_pred = softmax(predictions.predictions, axis=-1)
-            preds = np.argmax(predictions.predictions, axis=-1)
-            metric = evaluate.load("bstrai/classification_report")
-            results = metric.compute(predictions=preds, references=predictions.label_ids)
-            print("\n\n\n")
-            print("results")
-            print(results)
-            with open('results.json', 'w') as fp:
-                json.dump(results, fp)
-
-
         else:
             raise Exception("Peft model is not created!!!")
 
@@ -210,17 +180,4 @@ class CustomTrainer(Trainer):
 def preprocess_function(examples, **fn_kwargs):
     return fn_kwargs['tokenizer'](examples["text"], truncation=True,
                                   padding=True,
-                                  max_length=512)
-
-
-f1_metric = evaluate.load("f1")
-
-
-def compute_metrics(eval_pred):
-    predictions, labels = eval_pred
-    predictions = np.argmax(predictions, axis=1)
-
-    results = {}
-    results.update(f1_metric.compute(predictions=predictions, references=labels, average="micro"))
-
-    return results
+                                  max_length=fn_kwargs["max_length"])
