@@ -32,7 +32,7 @@ class BaseConfig:
                                  default=16)
         self.parser.add_argument("--lora_dropout",
                                  type=int,
-                                 default=0.1)
+                                 default=0.05)
         self.parser.add_argument("--lora_rank",
                                  type=int,
                                  default=64)
