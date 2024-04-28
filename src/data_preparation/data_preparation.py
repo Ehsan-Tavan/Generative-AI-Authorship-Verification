@@ -148,3 +148,34 @@ def paraphraser_data_creator(data: list, mode="train") -> (list, dict, dict):
         instructions.append({"instruction": formatted_prompt})
 
     return instructions
+
+
+def generation_data_creator(data: list, mode="train") -> (list, dict, dict):
+    instructions = []
+    instruction_key = "### Instruction: "
+    task_instruction = "Classify input text into human_generated or ai_generated text."
+    input_key = "### Text: "
+    end_key = "### End"
+    response_key = "### Response: "
+
+    for sample in data:
+        instruction = f"{instruction_key}\n{task_instruction}"
+        input_text = f"{input_key}\n{sample['text']}"
+        if sample["label"] == 0:
+            response = f"{response_key}\nai_generated"
+
+        else:
+            response = f"{response_key}\nhuman_generated"
+
+        end = f"{end_key}"
+        if mode == "train":
+            parts = [part for part in
+                     [instruction, input_text, response, end]]
+        else:
+            parts = [part for part in
+                     [instruction, input_text, response_key]]
+
+        formatted_prompt = "\n".join(parts)
+        instructions.append({"instruction": formatted_prompt})
+
+    return instructions
