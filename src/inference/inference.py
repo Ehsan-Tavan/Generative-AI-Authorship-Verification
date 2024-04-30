@@ -11,7 +11,10 @@ import torch
 import tqdm
 from peft import PeftModel
 from transformers import LlamaForSequenceClassification, AutoTokenizer, \
-    AutoModelForSequenceClassification
+    AutoModelForSequenceClassification, AutoModelForCausalLM
+
+# ============================ My packages ============================
+from src.utils import perplexity, entropy
 
 
 class Inference(ABC):
@@ -126,3 +129,106 @@ class MistralInferencer(Inference):
         return results
 
 
+class BinocularInferencer(Inference):
+    def __init__(self, observer_name_or_path, performer_name_or_path, max_length, mode,
+                 binoculars_accuracy_threshold,  binoculars_fpr_threshold, device):
+        super().__init__(observer_name_or_path, max_length, device)
+        self.observer_name_or_path = observer_name_or_path
+        self.performer_name_or_path = performer_name_or_path
+        self.max_token_observed = max_length
+
+        # optimized for f1-score
+        self.binoculars_accuracy_threshold = binoculars_accuracy_threshold  # 0.9015310749276843
+
+        # optimized for low-fpr [chosen at 0.01%]
+        self.binoculars_fpr_threshold = binoculars_fpr_threshold  # 0.8536432310785527
+        self.threshold = None
+        self.observer_model = None
+        self.performer_model = None
+
+        self.change_mode(mode)  # low-fpr
+
+        self.load_model()
+
+    def load_model(self):
+        self.tokenizer = AutoTokenizer.from_pretrained(self.observer_name_or_path,
+                                                       trust_remote_code=True)
+        performer_tokenizer = AutoTokenizer.from_pretrained(self.performer_name_or_path,
+                                                            trust_remote_code=True)
+
+        self.assert_tokenizer_consistency(observer_tokenizer=self.tokenizer,
+                                          performer_tokenizer=performer_tokenizer)
+
+        self.observer_model = AutoModelForCausalLM.from_pretrained(
+            self.observer_name_or_path,
+            device_map=self.device,
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16
+        )
+        self.performer_model = AutoModelForCausalLM.from_pretrained(
+            self.performer_name_or_path,
+            device_map=self.device,
+            trust_remote_code=True,
+            torch_dtype=torch.bfloat16
+        )
+        self.observer_model.eval()
+        self.performer_model.eval()
+
+        self.add_pad_token()
+
+    def change_mode(self, mode: str) -> None:
+        if mode == "low-fpr":
+            self.threshold = self.binoculars_fpr_threshold
+        elif mode == "accuracy":
+            self.threshold = self.binoculars_accuracy_threshold
+        else:
+            raise ValueError(f"Invalid mode: {mode}")
+
+    @staticmethod
+    def assert_tokenizer_consistency(observer_tokenizer, performer_tokenizer):
+        identical_tokenizers = (observer_tokenizer.vocab == performer_tokenizer.vocab)
+        if not identical_tokenizers:
+            raise ValueError(f"Tokenizers are not identical for {observer_tokenizer} and "
+                             f"{performer_tokenizer}.")
+
+    def _tokenize(self, batch: list[str]):
+        batch_size = len(batch)
+        encodings = self.tokenizer(
+            batch,
+            return_tensors="pt",
+            padding="longest" if batch_size > 1 else False,
+            truncation=True,
+            max_length=self.max_token_observed,
+            return_token_type_ids=False).to(self.observer_model.device)
+        return encodings
+
+    @torch.inference_mode()
+    def _get_logits(self, encodings):
+        observer_logits = self.observer_model(**encodings).logits
+        performer_logits = self.performer_model(**encodings).logits
+        return observer_logits, performer_logits
+
+    def compute_score(self, input_text):
+        batch = [input_text] if isinstance(input_text, str) else input_text
+        encodings = self._tokenize(batch)
+        observer_logits, performer_logits = self._get_logits(encodings)
+        ppl = perplexity(encodings, performer_logits)
+        x_ppl = entropy(observer_logits.to(self.device), performer_logits.to(self.device),
+                        encodings.to(self.device), self.tokenizer.pad_token_id)
+        binoculars_scores = ppl / x_ppl
+        binoculars_scores = binoculars_scores.tolist()
+        return binoculars_scores[0] if isinstance(input_text, str) else binoculars_scores
+
+    def inferencer_wrapper(self, sample):
+        text1_score = self.compute_score(sample["text1"])
+        text2_score = self.compute_score(sample["text2"])
+        if text1_score < text2_score:
+            return 0
+        else:
+            return 1
+
+    def runner(self, samples):
+        results = []
+        for sample in tqdm.tqdm(samples):
+            results.append(self.inferencer_wrapper(sample))
+        return results
