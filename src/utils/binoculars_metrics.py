@@ -1,7 +1,7 @@
 """
     Generative_AI_Authorship_Verification Project:
-        binoculars:
-            metrics.py
+        utils:
+            binoculars_metrics.py
 """
 # ============================ Third Party libs ============================
 
