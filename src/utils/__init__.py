@@ -4,3 +4,4 @@
 """
 from .log_file_creator import CreateLogFile
 from .binoculars_metrics import perplexity, entropy
+from .helper import calculate_mean
