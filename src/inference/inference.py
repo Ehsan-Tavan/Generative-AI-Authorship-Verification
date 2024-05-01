@@ -66,9 +66,9 @@ class Inference(ABC):
 
 
 class LLamaInferencer(Inference):
-    def __init__(self, model_path, peft_model_path, max_length, device):
-        super().__init__(model_path, max_length, device)
-        self.peft_model_path = peft_model_path
+    def __init__(self, **kwargs):
+        super().__init__(kwargs["llama_model_path"], kwargs["max_length"], kwargs["device"])
+        self.peft_model_path = kwargs["llama_peft_model_path"]
 
         self.load_model()
 
@@ -98,9 +98,9 @@ class LLamaInferencer(Inference):
 
 
 class MistralInferencer(Inference):
-    def __init__(self, model_path, peft_model_path, max_length, device):
-        super().__init__(model_path, max_length, device)
-        self.peft_model_path = peft_model_path
+    def __init__(self, **kwargs):
+        super().__init__(kwargs["mistral_model_path"], kwargs["max_length"], kwargs["device"])
+        self.peft_model_path = kwargs["mistral_peft_model_path"]
 
         self.load_model()
 
@@ -130,23 +130,22 @@ class MistralInferencer(Inference):
 
 
 class BinocularInferencer(Inference):
-    def __init__(self, observer_name_or_path, performer_name_or_path, max_length, mode,
-                 binoculars_accuracy_threshold,  binoculars_fpr_threshold, device):
-        super().__init__(observer_name_or_path, max_length, device)
-        self.observer_name_or_path = observer_name_or_path
-        self.performer_name_or_path = performer_name_or_path
-        self.max_token_observed = max_length
+    def __init__(self, **kwargs):
+        super().__init__(kwargs["observer_name_or_path"], kwargs["max_length"], kwargs["device"])
+        self.observer_name_or_path = kwargs["observer_name_or_path"]
+        self.performer_name_or_path = kwargs["performer_name_or_path"]
+        self.max_token_observed = kwargs["max_length"]
 
         # optimized for f1-score
-        self.binoculars_accuracy_threshold = binoculars_accuracy_threshold  # 0.9015310749276843
+        self.binoculars_accuracy_threshold = kwargs["binoculars_accuracy_threshold"]
 
         # optimized for low-fpr [chosen at 0.01%]
-        self.binoculars_fpr_threshold = binoculars_fpr_threshold  # 0.8536432310785527
+        self.binoculars_fpr_threshold = kwargs["binoculars_fpr_threshold"]
         self.threshold = None
         self.observer_model = None
         self.performer_model = None
 
-        self.change_mode(mode)  # low-fpr
+        self.change_mode(kwargs["mode"])  # low-fpr
 
         self.load_model()
 
