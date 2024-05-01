@@ -14,7 +14,7 @@ from transformers import LlamaForSequenceClassification, AutoTokenizer, \
     AutoModelForSequenceClassification, AutoModelForCausalLM
 
 # ============================ My packages ============================
-from src.utils import perplexity, entropy
+from src.utils import perplexity, entropy, calculate_mean
 
 
 class Inference(ABC):
@@ -232,3 +232,17 @@ class BinocularInferencer(Inference):
         for sample in tqdm.tqdm(samples):
             results.append(self.inferencer_wrapper(sample))
         return results
+
+
+def runner_factory(samples: list, inference_methods: list, **kwargs):
+    results = []
+    method2inference_class = {"llama": LLamaInferencer,
+                              "mistral": MistralInferencer,
+                              "binocular": BinocularInferencer}
+
+    for method in inference_methods:
+        inference_obj = method2inference_class[method](**kwargs)
+        results.append(inference_obj.runner(samples))
+
+    return [calculate_mean(sample) for sample in zip(*results)]
+
