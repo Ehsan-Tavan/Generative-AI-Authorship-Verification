@@ -213,8 +213,8 @@ class BinocularInferencer(Inference):
         encodings = self._tokenize(batch)
         observer_logits, performer_logits = self._get_logits(encodings)
         ppl = perplexity(encodings, performer_logits)
-        x_ppl = entropy(observer_logits.to(self.device), performer_logits.to(self.device),
-                        encodings.to(self.device), self.tokenizer.pad_token_id)
+        x_ppl = entropy(observer_logits, performer_logits,
+                        encodings, self.tokenizer.pad_token_id)
         binoculars_scores = ppl / x_ppl
         binoculars_scores = binoculars_scores.tolist()
         return binoculars_scores[0] if isinstance(input_text, str) else binoculars_scores
