@@ -5,40 +5,67 @@
 """
 # ============================ Third Party libs =======================
 
+import os
+
 from datasets import Dataset
+from sklearn.metrics import accuracy_score
 
 # ============================ My packages ============================
 from src.configuration import BaseConfig
-from src.data_loader import load_jsonl, save_to_jsonl
-from src.inference import MistralInferencer
+from src.data_loader import load_jsonl
+from src.data_preparation import sequence_classification_data_creator2
+from src.inference import runner_factory
 
 if __name__ == "__main__":
     CONFIG_CLASS = BaseConfig()
     ARGS = CONFIG_CLASS.get_config()
 
-    # DEV_DATA = load_jsonl(os.path.join(ARGS.processed_data_dir, ARGS.pair_dev_file))
-    DEV_DATA = load_jsonl("/mnt/disk2/ehsan.tavan/gen_ai/data/Processed/dev_data_1.jsonl")
+    DEV_DATA = load_jsonl(os.path.join(ARGS.processed_data_dir, ARGS.pair_dev_file))
+    # DEV_DATA = load_jsonl("/mnt/disk2/ehsan.tavan/gen_ai/data/Processed/dev_data_1.jsonl")
 
-    # DEV_SAMPLES, _, _ = sequence_classification_data_creator2(DEV_DATA)
-    DEV_DATASET = Dataset.from_list(DEV_DATA)
-    # TRUE_LABELS = [sample["labels"] for sample in DEV_DATASET]
+    DEV_SAMPLES, _, _ = sequence_classification_data_creator2(DEV_DATA)
+    DEV_DATASET = Dataset.from_list(DEV_SAMPLES)
+    TRUE_LABELS = [sample["labels"] for sample in DEV_DATASET]
 
-    INFERENCER = MistralInferencer(model_path=ARGS.model_path,
-                                   peft_model_path="/mnt/disk2/ehsan.tavan/gen_ai/assets/"
-                                                   "saved_model/"
-                                                   "Generative_AI_Authorship_Verification_mistral/"
-                                                   "version_1/checkpoint-868",
-                                   max_length=ARGS.max_length,
-                                   device=ARGS.device)
+    RESULTS = runner_factory(samples=DEV_DATASET, inference_methods=["llama", "mistral",
+                                                                     "binocular"],
+                             observer_name_or_path=ARGS.observer_name_or_path,
+                             performer_name_or_path=ARGS.performer_name_or_path,
+                             llama_model_path=ARGS.llama_model_path,
+                             llama_peft_model_path=ARGS.llama_peft_model_path,
+                             mistral_model_path=ARGS.mistral_model_path,
+                             mistral_peft_model_path=ARGS.mistral_peft_model_path,
+                             max_length=ARGS.max_length,
+                             mode="low-fpr",
+                             binoculars_accuracy_threshold=ARGS.binoculars_accuracy_threshold,
+                             binoculars_fpr_threshold=ARGS.binoculars_fpr_threshold,
+                             device=ARGS.device
+                             )
 
-    RESULTS = INFERENCER.runner(DEV_DATASET)
+    # INFERENCER = BinocularInferencer(
+    #     observer_name_or_path=ARGS.observer_name_or_path,
+    #     performer_name_or_path=ARGS.performer_name_or_path,
+    #     max_length=ARGS.max_length,
+    #     mode="low-fpr",
+    #     binoculars_accuracy_threshold=ARGS.binoculars_accuracy_threshold,
+    #     binoculars_fpr_threshold=ARGS.binoculars_fpr_threshold,
+    #     device=ARGS.device)
+    #
+    # RESULTS = INFERENCER.runner(DEV_DATASET)
 
     OUTPUTS = []
-    for index, sample in enumerate(DEV_DATASET):
-        OUTPUTS.append({"id": sample["id"],
-                        "is_human": RESULTS["index"]})
+    # for index, sample in enumerate(DEV_DATASET):
+    #     OUTPUTS.append({"id": sample["id"],
+    #                     "is_human": RESULTS["index"]})
 
-    print(OUTPUTS)
-    save_to_jsonl(data=OUTPUTS, file_path="output.jsonl")
-    # ACC = accuracy_score(y_true=TRUE_LABELS, y_pred=RESULTS)
-    # print("ACC", ACC)
+    print(RESULTS)
+    for index, item in enumerate(RESULTS):
+        if item >= 0.5:
+            RESULTS[index] = 1
+        else:
+            RESULTS[index] = 0
+    print(RESULTS)
+
+    # save_to_jsonl(data=OUTPUTS, file_path=ARGS.outputDir)
+    ACC = accuracy_score(y_true=TRUE_LABELS, y_pred=RESULTS)
+    print("ACC", ACC)
