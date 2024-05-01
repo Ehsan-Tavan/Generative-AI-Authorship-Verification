@@ -243,6 +243,7 @@ def runner_factory(samples: list, inference_methods: list, **kwargs):
     for method in inference_methods:
         inference_obj = method2inference_class[method](**kwargs)
         results.append(inference_obj.runner(samples))
+        del inference_obj
 
     return [calculate_mean(sample) for sample in zip(*results)]
 
