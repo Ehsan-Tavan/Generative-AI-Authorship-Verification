@@ -23,6 +23,7 @@ Running the Framework
 
 To run the framework, execute inferencer.py with the required arguments. Here's an example command structure:
 
+```python
 python inferencer.py \
   --llama_model_path="Path to Llama-2-7b" \
   --llama_peft_model_path="Path to Generative-AV-LLaMA-2-7b" \
@@ -32,6 +33,7 @@ python inferencer.py \
   --performer_name_or_path="Path to Falcon-7b-Instruct" \
   --outputDir="Path to output .jsonl file" \
   --inputDataset="Path to input .jsonl file"
+```
 
 Replace the text within double quotes with the correct paths to your downloaded models and files.
 
