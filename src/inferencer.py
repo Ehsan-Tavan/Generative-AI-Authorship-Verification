@@ -8,7 +8,6 @@
 import os
 
 from datasets import Dataset
-from sklearn.metrics import accuracy_score
 
 # ============================ My packages ============================
 from src.configuration import BaseConfig

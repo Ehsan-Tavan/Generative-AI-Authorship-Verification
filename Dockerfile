@@ -1,17 +1,18 @@
-# docker build -t ghcr.io/pan-webis-de/pan24-generative-authorship-baselines:latest .
+# docker build -t pan24-generative-authorship .
 
-FROM nvcr.io/nvidia/cuda:12.3.1-devel-ubuntu22.04
+FROM pytorch/pytorch:2.3.0-cuda12.1-cudnn8-runtime
+
+ADD requirements.txt /
 
 RUN set -x \
     && apt update \
     && apt install -y git python3 python3-packaging python3-pip \
+    && pip install --no-cache --upgrade pip \
+    && pip install -r /requirements.txt \
+    && rm -Rr /requirements.txt \
     && rm -rf /var/lib/apt/lists/*
 
-COPY . /opt/first_run
-WORKDIR /opt/first_run
-RUN set -x \
-    && pip install --no-cache --upgrade pip \
-    && pip install -r requirements.txt
+ENV PYTHONPATH=/app
 
-VOLUME /dataset.jsonl
-VOLUME /out
+COPY . /app
+
