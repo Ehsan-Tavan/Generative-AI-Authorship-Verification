@@ -1,9 +1,8 @@
 openpyxl==3.0.10
 datasets==2.19.0
-pandas==2.1.4
-json==2.0.9
-torch==2.3.0+cu121
+pandas==1.4.3
+torch==2.3.0
 peft==0.10.0
 transformers==4.40.1
-numpy==1.26.2
+numpy==1.24.4
 tqdm==4.65.0
