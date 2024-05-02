@@ -53,7 +53,7 @@ class Inference(ABC):
         return self.tokenizer(input_text, truncation=True,
                               padding=True,
                               max_length=self.max_length,
-                              return_tensors="pt")
+                              return_tensors="pt").to(self.device)
 
     def inferencer_wrapper(self, sample):
         output_1 = torch.softmax(
