@@ -13,7 +13,7 @@ To run this framework, you need to download the following language models:
 
 Additionally, download the following custom LoRA weights for the models:
 
-- [Generative-AV-Mistral-v0.1-7b](https://huggingface.co/Ehsan-Tavan/Generative-AV-Mistral-v0.1-7b/settings)
+- [Generative-AV-Mistral-v0.1-7b](https://huggingface.co/Ehsan-Tavan/Generative-AV-Mistral-v0.1-7b)
 - [Generative-AV-LLaMA-2-7b](https://huggingface.co/Ehsan-Tavan/Generative-AV-LLaMA-2-7b)
 
 **Setting Up**
