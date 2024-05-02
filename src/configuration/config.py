@@ -129,9 +129,22 @@ class BaseConfig:
                                  type=str,
                                  default=Path(__file__).parents[2].__str__() +
                                          "/assets/saved_model")
-        self.parser.add_argument("--model_path",
+        self.parser.add_argument("--llama_model_path",
                                  type=str,
                                  default="/mnt/disk2/LanguageModels/llama-2-7b")
+        self.parser.add_argument("--llama_peft_model_path",
+                                 type=str,
+                                 default="/mnt/disk2/ehsan.tavan/gen_ai/assets/saved_model/"
+                                         "Generative_AI_Authorship_Verification_LLama/"
+                                         "version_0/checkpoint-868")
+        self.parser.add_argument("--mistral_model_path",
+                                 type=str,
+                                 default="/mnt/disk2/LanguageModels/Mistral-7B-v0.1")
+        self.parser.add_argument("--mistral_peft_model_path",
+                                 type=str,
+                                 default="/mnt/disk2/ehsan.tavan/gen_ai/assets/saved_model/"
+                                         "Generative_AI_Authorship_Verification_mistral/version_1/"
+                                         "checkpoint-868")
         self.parser.add_argument("--lm_model_path",
                                  type=str,
                                  default="/mnt/disk2/LanguageModels/xlm-roberta-base")
@@ -142,6 +155,13 @@ class BaseConfig:
         self.parser.add_argument("--performer_name_or_path",
                                  type=str,
                                  default="/mnt/disk2/LanguageModels/falcon-7b-instruct")
+        self.parser.add_argument("--outputDir",
+                                 type=str,
+                                 default="./output_file.jsonl")
+        self.parser.add_argument("--inputDataset",
+                                 type=str,
+                                 default="./input_file.jsonl")
+
 
     def get_config(self):
         """

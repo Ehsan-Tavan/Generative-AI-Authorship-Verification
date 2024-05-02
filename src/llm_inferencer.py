@@ -7,11 +7,11 @@ import os
 from sklearn.metrics import accuracy_score
 import torch
 from datasets import Dataset
-from peft import PeftModel
+from peft import PeftModel, LoraConfig
 from transformers import AutoTokenizer
 from transformers import BitsAndBytesConfig, \
     LlamaForSequenceClassification
-
+from huggingface_hub import notebook_login
 from src.configuration import BaseConfig
 from src.data_loader import load_jsonl
 from src.data_preparation import sequence_classification_data_creator
@@ -20,11 +20,13 @@ if __name__ == "__main__":
     CONFIG_CLASS = BaseConfig()
     ARGS = CONFIG_CLASS.get_config()
 
+    notebook_login()
+
     DEV_DATA = load_jsonl(os.path.join(ARGS.processed_data_dir, ARGS.single_dev_file))
     DEV_SAMPLES, _, _ = sequence_classification_data_creator(DEV_DATA)
     DEV_DATASET = Dataset.from_list(DEV_SAMPLES)
 
-    TOKENIZER = AutoTokenizer.from_pretrained(ARGS.model_path, trust_remote_code=True)
+    TOKENIZER = AutoTokenizer.from_pretrained(ARGS.llama_model_path, trust_remote_code=True)
     # DM added
     if TOKENIZER.pad_token is None:
         if TOKENIZER.eos_token is not None:
@@ -47,7 +49,7 @@ if __name__ == "__main__":
     )
 
     BASE_MODEL = LlamaForSequenceClassification.from_pretrained(
-        ARGS.model_path,
+        ARGS.llama_model_path,
         quantization_config=bnb_config,
         trust_remote_code=True,
         num_labels=len(LABEL2ID),
@@ -57,9 +59,11 @@ if __name__ == "__main__":
     )
 
     PEFT_MODEL = PeftModel.from_pretrained(
-        BASE_MODEL, "/mnt/disk2/ehsan.tavan/gen_ai/assets/saved_model/"
-                    "Generative_AI_Authorship_Verification/version_0/checkpoint-324")
+        BASE_MODEL, ARGS.llama_peft_model_path)
     PEFT_MODEL.eval()
+    PEFT_MODEL.print_trainable_parameters()
+    PEFT_MODEL.push_to_hub("Generative-AV-PAN/llama-2-7b")
+    ss
 
     RESULTS = []
 

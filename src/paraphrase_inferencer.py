@@ -51,17 +51,20 @@ if __name__ == "__main__":
     tokenizer.pad_token = tokenizer.eos_token
     tokenizer.pad_token_id = tokenizer.eos_token_id
 
-    peft_model = PeftModel.from_pretrained(base_model, "/mnt/disk2/ehsan.tavan/gen_ai/assets/"
-                                                       "saved_model/Paraphraser/version_0/"
-                                                       "checkpoint-1080")
+    peft_model = PeftModel.from_pretrained(base_model,
+                                           "/mnt/disk2/ehsan.tavan/gen_ai/assets/saved_model/"
+                                           "Generative_AI_Authorship_Verification_Paraphraser/"
+                                           "version_1/_checkpoint-216")
     peft_model.eval()
 
     for index, sample in enumerate(DEV_DATASET):
         print(index / len(DEV_DATA) * 100)
-        tokenized_text = tokenizer(sample["instruction"], return_tensors="pt").to("cuda")
+        tokenized_text = tokenizer(sample["instruction"], return_tensors="pt").to("cuda:0")
         with torch.no_grad():
-            output = peft_model.generate(**tokenized_text, max_new_tokens=500,
-                                         pad_token_id=tokenizer.eos_token_id)
+            output = peft_model.generate(**tokenized_text,
+                                         max_new_tokens=len(tokenized_text["input_ids"][0]),
+                                         pad_token_id=tokenizer.eos_token_id,
+                                         temperature=0.01)
 
         results = [tokenizer.decode(res, skip_special_tokens=True) for res in output]
 
