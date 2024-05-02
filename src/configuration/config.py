@@ -17,7 +17,7 @@ class BaseConfig:
     def __init__(self):
         self.parser = argparse.ArgumentParser()
         self.parser.add_argument("--model_name", type=str,
-                                 default="Generative_AI_Authorship_Verification")
+                                 default="Generative_AI_Authorship_Verification_Paraphraser")
         self.parser.add_argument("--load_in_8bit",
                                  type=bool,
                                  default=False)
@@ -36,14 +36,14 @@ class BaseConfig:
         self.parser.add_argument("--lora_rank",
                                  type=int,
                                  default=64)
-        self.parser.add_argument("--device", default="cuda:0",
+        self.parser.add_argument("--device", default="cuda",
                                  help="device to inference models on it")
         self.parser.add_argument("--per_device_train_batch_size",
                                  type=int,
-                                 default=32)
+                                 default=2)
         self.parser.add_argument("--gradient_accumulation_steps",
                                  type=int,
-                                 default=1)
+                                 default=4)
         self.parser.add_argument("--optim",
                                  type=str,
                                  help="activates the paging for better memory management",
@@ -84,7 +84,7 @@ class BaseConfig:
                                  default=512)
         self.parser.add_argument("--max_length",
                                  type=int,
-                                 default=512)
+                                 default=800)
         self.parser.add_argument("--num_workers",
                                  type=int,
                                  default=4)
@@ -94,6 +94,13 @@ class BaseConfig:
         self.parser.add_argument("--training_data_type",
                                  type=str,
                                  default="single_text")
+
+        self.parser.add_argument("--binoculars_accuracy_threshold",
+                                 type=float,
+                                 default=0.9015310749276843)
+        self.parser.add_argument("--binoculars_fpr_threshold",
+                                 type=float,
+                                 default=0.8536432310785527)
 
     def add_path(self) -> None:
         """
@@ -122,12 +129,39 @@ class BaseConfig:
                                  type=str,
                                  default=Path(__file__).parents[2].__str__() +
                                          "/assets/saved_model")
-        self.parser.add_argument("--model_path",
+        self.parser.add_argument("--llama_model_path",
                                  type=str,
                                  default="/mnt/disk2/LanguageModels/llama-2-7b")
+        self.parser.add_argument("--llama_peft_model_path",
+                                 type=str,
+                                 default="/mnt/disk2/ehsan.tavan/gen_ai/assets/saved_model/"
+                                         "Generative_AI_Authorship_Verification_LLama/"
+                                         "version_0/checkpoint-868")
+        self.parser.add_argument("--mistral_model_path",
+                                 type=str,
+                                 default="/mnt/disk2/LanguageModels/Mistral-7B-v0.1")
+        self.parser.add_argument("--mistral_peft_model_path",
+                                 type=str,
+                                 default="/mnt/disk2/ehsan.tavan/gen_ai/assets/saved_model/"
+                                         "Generative_AI_Authorship_Verification_mistral/version_1/"
+                                         "checkpoint-868")
         self.parser.add_argument("--lm_model_path",
                                  type=str,
                                  default="/mnt/disk2/LanguageModels/xlm-roberta-base")
+
+        self.parser.add_argument("--observer_name_or_path",
+                                 type=str,
+                                 default="/mnt/disk2/LanguageModels/falcon-7b")
+        self.parser.add_argument("--performer_name_or_path",
+                                 type=str,
+                                 default="/mnt/disk2/LanguageModels/falcon-7b-instruct")
+        self.parser.add_argument("--outputDir",
+                                 type=str,
+                                 default="./output_file.jsonl")
+        self.parser.add_argument("--inputDataset",
+                                 type=str,
+                                 default="./input_file.jsonl")
+
 
     def get_config(self):
         """
