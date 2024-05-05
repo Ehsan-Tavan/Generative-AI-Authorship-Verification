@@ -62,7 +62,7 @@ class Inference(ABC):
         output_2 = torch.softmax(
             self.model(**self.tokenizer_wrapper(sample["text2"])).logits, dim=1
         ).detach().cpu().numpy()[0][0]
-        return 0 if output_1 - output_2 > 0.5 else 1
+        return output_1 - output_2 if output_1 - output_2 > 0 else 0
 
 
 class LLamaInferencer(Inference):
@@ -222,9 +222,9 @@ class BinocularInferencer(Inference):
         text1_score = self.compute_score(sample["text1"])
         text2_score = self.compute_score(sample["text2"])
         if text1_score < text2_score:
-            return 0
+            return 1.0
         else:
-            return 1
+            return 0.0
 
     def runner(self, samples):
         results = []
