@@ -162,3 +162,14 @@ def prepare_data(pair_train_data_path: str, pair_dev_data_path: str,
 
     data_processor = DataProcessorFactory.create_data_processor(training_data_type)
     return data_processor.prepare_data(train_data_path, dev_data_path)
+
+
+def create_paraphraser_data(data):
+    output_data = {"text1": [], "text2": [], "label": []}
+
+    # Iterate over each dictionary in the list
+    for item in data:
+        for key in item:
+            if key in output_data:
+                output_data[key].append(item[key])
+    return output_data
