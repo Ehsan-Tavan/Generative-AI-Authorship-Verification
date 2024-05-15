@@ -1,2 +1,2 @@
 from .data_module import DataModule
-from .dataset import TextPairDataset, SingleTextDataset
+from .dataset import TextPairDataset, SingleTextDataset, BARTDataset

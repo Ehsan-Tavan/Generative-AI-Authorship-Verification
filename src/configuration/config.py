@@ -17,7 +17,7 @@ class BaseConfig:
     def __init__(self):
         self.parser = argparse.ArgumentParser()
         self.parser.add_argument("--model_name", type=str,
-                                 default="Generative_AI_Authorship_Verification_Paraphraser")
+                                 default="Paraphraser_Bart")
         self.parser.add_argument("--load_in_8bit",
                                  type=bool,
                                  default=False)
@@ -36,11 +36,11 @@ class BaseConfig:
         self.parser.add_argument("--lora_rank",
                                  type=int,
                                  default=64)
-        self.parser.add_argument("--device", default="cuda",
+        self.parser.add_argument("--device", default="cuda:0",
                                  help="device to inference models on it")
         self.parser.add_argument("--per_device_train_batch_size",
                                  type=int,
-                                 default=2)
+                                 default=8)
         self.parser.add_argument("--gradient_accumulation_steps",
                                  type=int,
                                  default=4)
@@ -93,7 +93,7 @@ class BaseConfig:
                                  default=2)
         self.parser.add_argument("--training_data_type",
                                  type=str,
-                                 default="single_text")
+                                 default="text_pair")
 
         self.parser.add_argument("--binoculars_accuracy_threshold",
                                  type=float,
@@ -101,6 +101,8 @@ class BaseConfig:
         self.parser.add_argument("--binoculars_fpr_threshold",
                                  type=float,
                                  default=0.8536432310785527)
+        self.parser.add_argument("--openai_api_key", type=str,
+                                 default="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")
 
     def add_path(self) -> None:
         """
@@ -161,6 +163,9 @@ class BaseConfig:
         self.parser.add_argument("--inputDataset",
                                  type=str,
                                  default="./input_file.jsonl")
+        self.parser.add_argument("--bart_model_path",
+                                 type=str,
+                                 default="/mnt/disk2/LanguageModels/bart_large")
 
 
     def get_config(self):
