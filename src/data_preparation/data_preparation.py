@@ -237,3 +237,53 @@ def instruction_tuning_data_creator(data: list, mode="train") -> (list, dict, di
         formatted_prompt = "\n".join(parts)
         instructions.append({"instruction": formatted_prompt})
     return instructions
+
+
+def instruction_tuning_data_creator_single(data: list, mode="train") -> (list, dict, dict):
+    instructions = []
+    instruction_key = "### Instruction: "
+    task_instruction = "I give you two texts and ask you to determine which one is authored by " \
+                       "humans and which one is authored by machines. Your output is just a 0 " \
+                       "and 1 and do not generate anything else. 0 means text_1 is authored " \
+                       "by the machine and 1 means text_2 is authored by the machine."
+    input_key = "### Text: "
+    # input_key2 = "### Text2: "
+    end_key = "### End"
+    response_key = "### Response: "
+
+    for sample in data:
+        if sample['label'] == 0:
+            first_text_label = "machine_generated"
+            second_text_label = "human_written"
+
+        else:
+            first_text_label = "human_written"
+            second_text_label = "machine_generated"
+        instruction = f"{instruction_key}\n{task_instruction}\n"
+        input_text = f"{input_key}\n{sample['text1']}\n"
+        end = f"{end_key}"
+        if mode == "train":
+            response = f"{response_key}\n{first_text_label}"
+            parts = [part for part in
+                     [instruction, input_text, response, end]]
+        else:
+            parts = [part for part in
+                     [instruction, input_text, response_key]]
+
+        formatted_prompt = "\n".join(parts)
+        instructions.append({"instruction": formatted_prompt})
+
+        instruction = f"{instruction_key}\n{task_instruction}\n"
+        input_text = f"{input_key}\n{sample['text2']}\n"
+        end = f"{end_key}"
+        if mode == "train":
+            response = f"{response_key}\n{second_text_label}"
+            parts = [part for part in
+                     [instruction, input_text, response, end]]
+        else:
+            parts = [part for part in
+                     [instruction, input_text, response_key]]
+
+        formatted_prompt = "\n".join(parts)
+        instructions.append({"instruction": formatted_prompt})
+    return instructions
