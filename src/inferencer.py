@@ -4,27 +4,20 @@
             inferencer.py
 """
 # ============================ Third Party libs =======================
-
-import os
-
 from datasets import Dataset
 
 # ============================ My packages ============================
 from src.configuration import BaseConfig
 from src.data_loader import load_jsonl, save_to_jsonl
-from src.data_preparation import sequence_classification_data_creator2
 from src.inference import runner_factory
 
 if __name__ == "__main__":
     CONFIG_CLASS = BaseConfig()
     ARGS = CONFIG_CLASS.get_config()
 
-    # DEV_DATA = load_jsonl(os.path.join(ARGS.processed_data_dir, ARGS.pair_dev_file))
     DEV_DATA = load_jsonl(ARGS.inputDataset)
 
-    # DEV_SAMPLES, _, _ = sequence_classification_data_creator2(DEV_DATA)
     DEV_DATASET = Dataset.from_list(DEV_DATA)
-    # TRUE_LABELS = [sample["labels"] for sample in DEV_DATASET]
 
     RESULTS = runner_factory(samples=DEV_DATASET, inference_methods=["llama", "mistral",
                                                                      "binocular"],
@@ -46,14 +39,4 @@ if __name__ == "__main__":
         OUTPUTS.append({"id": sample["id"],
                         "is_human": RESULTS[index]})
 
-    # print(RESULTS)
-    # for index, item in enumerate(RESULTS):
-    #     if item >= 0.5:
-    #         RESULTS[index] = 1
-    #     else:
-    #         RESULTS[index] = 0
-    # print(RESULTS)
-
     save_to_jsonl(data=OUTPUTS, file_path=ARGS.outputDir)
-    # ACC = accuracy_score(y_true=TRUE_LABELS, y_pred=RESULTS)
-    # print("ACC", ACC)

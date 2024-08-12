@@ -13,9 +13,6 @@ from src.data_loader import load_jsonl
 from src.models import LLMModel
 from src.data_preparation import sequence_classification_data_creator
 
-
-os.environ["WANDB_MODE"] = "offline"
-
 if __name__ == "__main__":
     CONFIG_CLASS = BaseConfig()
     ARGS = CONFIG_CLASS.get_config()
