@@ -162,7 +162,7 @@ class BaseConfig:
                                  default="./output_file.jsonl")
         self.parser.add_argument("--inputDataset",
                                  type=str,
-                                 default="./input_file.jsonl")
+                                 default="../data/test_data.jsonl")
         self.parser.add_argument("--bart_model_path",
                                  type=str,
                                  default="/mnt/disk2/LanguageModels/bart_large")
