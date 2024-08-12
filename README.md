@@ -118,7 +118,7 @@ python inferencer.py \
 ```
 
 
-### Push to TIRA
+## Push to TIRA
 
 You can push this software to tira via:
 
@@ -130,3 +130,28 @@ tira-run \
     --command 'python /app/src/inferencer.py --llama_model_path=meta-llama/Llama-2-7b-hf --llama_peft_model_path=/root/.cache/huggingface/hub/models--Ehsan-Tavan--Generative-AV-LLaMA-2-7b/snapshots/3df014e07f262611b4eb9daa8a75cc486702b138/ --mistral_model_path=mistralai/Mistral-7B-v0.1 --mistral_peft_model_path=/root/.cache/huggingface/hub/models--Ehsan-Tavan--Generative-AV-Mistral-v0.1-7b/snapshots/593a0ade0090e3988824f7c05779360d24c5048e/ --observer_name_or_path=/root/.cache/huggingface/hub/models--tiiuae--falcon-7b/snapshots/898df1396f35e447d5fe44e0a3ccaaaa69f30d36/ --performer_name_or_path=/root/.cache/huggingface/hub/models--tiiuae--falcon-7b-instruct/snapshots/cf4b3c42ce2fdfe24f753f0f0d179202fea59c99/ --outputDir=$outputDir/results.jsonl --inputDataset=$inputDataset/dataset.jsonl' \
     --push true
 ```
+
+
+## BinocularsLLM Framework Structure
+
+
+    .
+    ├── data/                           # Directory containing dataset files
+    │
+    ├── src/                            # Main source code directory
+    │     ├── binoculars/               # Core logic and implementation of the Binoculars model
+    │     ├── configuration/            # Configuration files and settings for the framework
+    │     ├── data_loader/              # Scripts and modules for loading datasets 
+    │     ├── data_preparation/         # Code for preparing and preprocessing data
+    │     ├── dataset/                  # Dataset-related utilities and classes
+    │     ├── inference/                # Inference scripts for model predictions
+    │     ├── models/                   # Model architecture definitions and implementations
+    │     ├── utils/                    # Utility functions and helper scripts 
+    │     ├── inferencer.py             # Script for running inference using the trained model
+    │     ├── instruction_trainer.py    # Script for training the model with instructional data
+    │     ├── llm_trainer.py            # Script for fine-tuning the LLM with a classification head
+    │     ├── prepare_training_data.py  # Script for preparing data for training
+    │   
+    ├── Dockerfile                      # Docker configuration file for containerizing the framework
+    ├── README.md                       # Documentation and usage instructions
+    └── requirements.txt                # List of dependencies required to run the framework
