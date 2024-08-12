@@ -17,7 +17,7 @@ class BaseConfig:
     def __init__(self):
         self.parser = argparse.ArgumentParser()
         self.parser.add_argument("--model_name", type=str,
-                                 default="Paraphraser_Bart")
+                                 default="Paraphraser_Model")
         self.parser.add_argument("--load_in_8bit",
                                  type=bool,
                                  default=False)
@@ -101,8 +101,6 @@ class BaseConfig:
         self.parser.add_argument("--binoculars_fpr_threshold",
                                  type=float,
                                  default=0.8536432310785527)
-        self.parser.add_argument("--openai_api_key", type=str,
-                                 default="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")
 
     def add_path(self) -> None:
         """
@@ -147,9 +145,6 @@ class BaseConfig:
                                  default="/mnt/disk2/ehsan.tavan/gen_ai/assets/saved_model/"
                                          "Generative_AI_Authorship_Verification_mistral/version_1/"
                                          "checkpoint-868")
-        self.parser.add_argument("--lm_model_path",
-                                 type=str,
-                                 default="/mnt/disk2/LanguageModels/xlm-roberta-base")
 
         self.parser.add_argument("--observer_name_or_path",
                                  type=str,
@@ -163,10 +158,6 @@ class BaseConfig:
         self.parser.add_argument("--inputDataset",
                                  type=str,
                                  default="../data/test_data.jsonl")
-        self.parser.add_argument("--bart_model_path",
-                                 type=str,
-                                 default="/mnt/disk2/LanguageModels/bart_large")
-
 
     def get_config(self):
         """

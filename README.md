@@ -1,29 +1,65 @@
-# Generative-AI-Authorship-Verification
+<div align="center">
+<h2>
+BinocularsLLM, Fusing Binoculars’ Insight with the Proficiency of Large Language Models for Machine-Generated Text Detection
+</h2>
+</div>
 
-Welcome to the Generative-AI-Authorship-Verification Framework. This README will guide you through the process of setting up the required models, pulling additional data, and running the inference framework.
+ <div align="center">
+<b>Ehsan Tavan</b><sup>1∗</sup>,
+<b>Maryam Najafi</b><sup>2∗</sup>,
+</div>
 
-**Requirements**
+<div align="center">
+<sup>1</sup>NLP Department, Part AI Research Center, Tehran, Iran
+</div>
+<div align="center">
+<sup>2</sup>Department of Computer Science and Information Systems, University of Limerick, Ireland
+</div>
+ 
 
-To run this framework, you need to download the following language models:
+## Overview
+
+
+This repository hosts the source code for the **BinocularsLLM Framework**. 
+Our framework achieved top performance in the [Voight-Kampff Generative AI 
+Authorship Verification](https://pan.webis.de/clef24/pan24-web/generated-content-analysis.html) task of PAN 2024. [[Paper](https://scholar.google.com/citations?view_op=view_citation&hl=en&user=oY-ufO0AAAAJ&citation_for_view=oY-ufO0AAAAJ:Y0pCki6q_DkC)]
+
+## Getting Started
+
+### Installation
+To use the BinocularsLLM Framework, clone this repository and install 
+the required packages listed in `requirements.txt` using pip. 
+The code is developed and tested with Python 3.10. 
+Execute the following commands to set up the environment:
+
+```bash
+git clone https://github.com/Ehsan-Tavan/Generative-AI-Authorship-Verification.git
+cd Generative-AI-Authorship-Verification
+pip install -r requirements.txt
+```
+
+
+### Download Required Models
+
+To run the BinocularsLLM Framework, you'll need to download the following language models:
 
 - [Llama-2-7b](https://huggingface.co/meta-llama/Llama-2-7b)
 - [Mistral-7B-v0.1](https://huggingface.co/mistralai/Mistral-7B-v0.1)
 - [Falcon-7b](https://huggingface.co/tiiuae/falcon-7b)
 - [Falcon-7b-Instruct](https://huggingface.co/tiiuae/falcon-7b-instruct)
 
-Additionally, download the following custom LoRA weights for the models:
+Additionally, download the custom LoRA weights for these models:
 
 - [Generative-AV-Mistral-v0.1-7b](https://huggingface.co/Ehsan-Tavan/Generative-AV-Mistral-v0.1-7b)
 - [Generative-AV-LLaMA-2-7b](https://huggingface.co/Ehsan-Tavan/Generative-AV-LLaMA-2-7b)
 
-**Setting Up**
+### Running Inference
 
-Before running the framework, ensure all models and LoRA weights are downloaded to accessible locations on your system.
-Running the Framework
+Before running the framework, ensure that all models and LoRA weights are downloaded and saved to accessible locations on your system.
 
-To run the framework, execute inferencer.py with the required arguments. Here's an example command structure:
+To run the framework, execute `inferencer.py` with the required arguments. Below is an example command structure:
 
-```python
+```bash
 python inferencer.py \
   --llama_model_path="Path to Llama-2-7b" \
   --llama_peft_model_path="Path to Generative-AV-LLaMA-2-7b" \
@@ -35,13 +71,54 @@ python inferencer.py \
   --inputDataset="Path to input .jsonl file"
 ```
 
-Replace the text within double quotes with the correct paths to your downloaded models and files.
+### Instructions for Input and Output Files
 
-**Output**
+#### Input File
 
-The framework will output a .jsonl file to the location specified in outputDir. This file contains the results of the inference process, which you can further process or analyze as needed.
+- **Format**: The input will be provided as a JSON Lines (JSONL) file, with each line representing a JSON object.
+- **Content**: Each line contains a pair of texts that need to be analyzed. The structure of each JSON object is as follows:
 
-**Push to TIRA**
+  ```json
+  {
+    "id": "unique_identifier",
+    "text1": "first_text_to_analyze",
+    "text2": "second_text_to_analyze"
+  }
+
+- **id**: A unique identifier for the text pair (string).
+- **text1**: The first text in the pair (string).
+- **text2**: The second text in the pair (string).
+
+#### Example:
+```json
+    {"id": "iixcWBmKWQqLAwVXxXGBGg", "text1": "Sample text 1", "text2": "Sample text 2"}
+    {"id": "y12zUebGVHSN9yiL8oRZ8Q", "text1": "Another text 1", "text2": "Another text 2"}
+```
+#### Output File
+
+- **Format**: The output should also be a JSON Lines (JSONL) file, where each line represents the analysis result for the corresponding text pair.
+
+- **Content**: Each line contains the unique identifier from the input file and the result of the analysis (is_human score). The structure of each JSON object is as follows:
+
+```json
+    {
+      "id": "unique_identifier",
+      "is_human": predicted score
+    }
+```
+
+- **id**: The unique identifier corresponding to the text pair in the input file (string).
+- **is_human**: The predicted probability that the text pair was generated by a human (float between 0 and 1, where 1.0 indicates high probability of being human-generated, and 0.0 indicates low probability).
+
+#### Example:
+
+```json
+        {"id": "iixcWBmKWQqLAwVXxXGBGg", "is_human": 1.0}
+        {"id": "y12zUebGVHSN9yiL8oRZ8Q", "is_human": 0.3}
+```
+
+
+### Push to TIRA
 
 You can push this software to tira via:
 
