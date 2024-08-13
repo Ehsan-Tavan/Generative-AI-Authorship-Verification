@@ -6,7 +6,7 @@ BinocularsLLM, Fusing Binoculars’ Insight with the Proficiency of Large Langua
 
  <div align="center">
 <b>Ehsan Tavan</b><sup>1</sup>,
-<b>Maryam Najafi</b><sup>2</sup>
+<b>Maryam Najafi</b><sup>1, 2</sup>
 </div>
 
 <div align="center">
