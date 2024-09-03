@@ -12,7 +12,7 @@ import transformers
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 # ============================ My packages ============================
-from .metrics import perplexity, entropy
+from src.utils import perplexity, entropy
 from .utils import assert_tokenizer_consistency
 
 torch.set_grad_enabled(False)
